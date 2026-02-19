@@ -1,0 +1,114 @@
+version: "1"
+
+services:
+  mongodb:
+    image: "mongo"
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - chat-app-db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=chat-app-mongo
+      - MONGO_INITDB_ROOT_PASSWORD=chat-app-mongo
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    depends_on:
+      - mongodb
+
+  chat-app-user-cnt:
+    build:
+      context: ./chat-app-server/user
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "5001:5001"
+    volumes:
+      - chat-app-logs-user:/app/logs
+      - ./chat-app-server/user:/app # your source code (hot reload)
+      - user_node_modules:/app/node_modules # ✅ named volume (not anonymous)
+      - user_pnpm_store:/app/.pnpm-store # ✅ protects pnpm store
+    env_file:
+      - ./chat-app-server/user/.env
+    depends_on:
+      - mongodb
+
+  chat-app-mail-cnt:
+    build:
+      context: ./chat-app-server/mail
+      dockerfile: Dockerfile
+    container_name: mail-service
+    ports:
+      - "5002:5002"
+    volumes:
+      - chat-app-logs-mail:/app/logs
+      - ./chat-app-server/mail:/app
+      - mail_node_modules:/app/node_modules # ✅
+      - mail_pnpm_store:/app/.pnpm-store # ✅
+    env_file:
+      - ./chat-app-server/mail/.env
+    depends_on:
+      - mongodb
+      - chat-app-user-cnt
+
+  chat-app-chat-cnt:
+    build:
+      context: ./chat-app-server/chat
+      dockerfile: Dockerfile
+    container_name: chat-service
+    ports:
+      - "5003:5003"
+    volumes:
+      - chat-app-logs-chat:/app/logs
+      - ./chat-app-server/chat:/app
+      - chat_node_modules:/app/node_modules # ✅
+      - chat_pnpm_store:/app/.pnpm-store # ✅
+    env_file:
+      - ./chat-app-server/chat/.env
+    depends_on:
+      - mongodb
+      - chat-app-user-cnt
+
+  chat-app-client-cnt:
+    build:
+      context: ./chat-app-client
+      dockerfile: Dockerfile
+    container_name: chat-app-client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./chat-app-client:/app
+      # - client_node_modules:/app/node_modules
+      # - client_pnpm_store:/app/.pnpm-store
+    env_file:
+      - ./chat-app-client/.env
+    depends_on:
+      - chat-app-user-cnt
+      - chat-app-chat-cnt
+      - chat-app-mail-cnt
+
+volumes:
+  chat-app-db:
+
+  chat-app-logs-user:
+  user_node_modules:
+  user_pnpm_store:
+
+  chat-app-logs-mail:
+  mail_node_modules:
+  mail_pnpm_store:
+
+  chat-app-logs-chat:
+  chat_node_modules:
+  chat_pnpm_store:
+
+  # client_node_modules:
+  # client_pnpm_store:
