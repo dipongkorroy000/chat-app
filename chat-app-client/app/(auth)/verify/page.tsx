@@ -1,8 +1,10 @@
+import VerifyOTP from "@/app/components/VerifyOTP";
+
 const VerifyPage = () => {
   return (
     <div>
       <div></div>
-      <h2>Verify Page</h2>
+      <VerifyOTP></VerifyOTP>
     </div>
   );
 };
