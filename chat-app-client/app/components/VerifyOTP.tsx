@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {ArrowRight, Loader2, Lock} from "lucide-react";
-import {useRouter, useSearchParams} from "next/navigation";
+import {ArrowRight, ChevronLeft, Loader2, Lock} from "lucide-react";
+import {redirect, useRouter, useSearchParams} from "next/navigation";
 import {useEffect, useRef, useState} from "react";
-import {verifyOTP} from "../service/auth/login";
+import {login, verifyOTP} from "../service/auth/auth.service";
+import Cookies from "js-cookie";
+import {useAppData} from "../context/AppContext";
+import Loading from "./Loading";
 
 const VerifyOTP = () => {
+  const {isAuth, setIsAuth, setUser, loading: load} = useAppData();
+
   const searchParams = useSearchParams();
   const email: string = searchParams.get("email") || "";
 
@@ -68,26 +73,58 @@ const VerifyOTP = () => {
     setLoading(true);
 
     try {
-      //   const data = await verifyOTP(email, otpString);
+      const data = await verifyOTP(email, otpString);
 
-      //   console.log(data);
-      //   cookies setup
+      console.log(data);
+      alert(data.message);
 
-      //   alert(data.message);
-      router.push(`/success`);
+      // cookies setup
+      Cookies.set("chat-app-token", data.token, {
+        expires: 15, // 15 days
+        secure: false,
+        path: "/",
+      });
+
+      setOTP(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+
+      setUser(data.user);
+      setIsAuth(true);
     } catch (error: any) {
-      alert(error.response.data.message);
-      console.log(error);
+      setError(error.response.data.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleResendOTP = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await login(email);
+
+      alert(data.message);
+      setTimer(60);
+    } catch (error: any) {
+      setError(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (load) return <Loading></Loading>;
+
+  if (isAuth) redirect("/chat");
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full mx-auto">
         <div className="bg-gray-800 border-gray-700 rounded-lg p-8">
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 relative">
+            <button onClick={() => router.push("/login")} className="absolute top-0 left-0 p-2 text-gray-300 hover:text-white">
+              <ChevronLeft></ChevronLeft>
+            </button>
             <div className="mx-auto w-20 h-20 bg-blue-600 rounded-lg flex items-center justify-center mb-6">
               <Lock size={40}></Lock>
             </div>
@@ -149,7 +186,7 @@ const VerifyOTP = () => {
             {timer > 0 ? (
               <p className="text-gray-400 text-sm">Resend code in {timer} seconds</p>
             ) : (
-              <button className="text-blue-400 hover:text-blue-300 font-medium text-sm disabled:opacity-50" disabled={loading}>
+              <button onClick={handleResendOTP} className="text-blue-400 hover:text-blue-300 font-medium text-sm disabled:opacity-50" disabled={loading}>
                 {loading ? "Sending..." : "Resend Code"}
               </button>
             )}

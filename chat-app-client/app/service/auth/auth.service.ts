@@ -14,3 +14,9 @@ export const verifyOTP = async (email: string, otp: string) => {
 
   return data;
 };
+
+export const profile = async (token: string) => {
+  const {data} = await axios.get(`${config.user_service_base_url}/my-profile`, {headers: {Authorization: `Bearer ${token}`}});
+
+  return data;
+};

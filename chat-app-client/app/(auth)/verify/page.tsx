@@ -1,10 +1,13 @@
+import Loading from "@/app/components/Loading";
 import VerifyOTP from "@/app/components/VerifyOTP";
+import {Suspense} from "react";
 
 const VerifyPage = () => {
   return (
     <div>
-      <div></div>
-      <VerifyOTP></VerifyOTP>
+      <Suspense fallback={<Loading></Loading>}>
+        <VerifyOTP></VerifyOTP>
+      </Suspense>
     </div>
   );
 };

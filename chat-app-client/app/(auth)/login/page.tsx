@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {login} from "@/app/service/auth/login";
+import Loading from "@/app/components/Loading";
+import {useAppData} from "@/app/context/AppContext";
+import {login} from "@/app/service/auth/auth.service";
 import {ArrowRightToLine, Loader2, Mail} from "lucide-react";
-import {useRouter} from "next/navigation";
+import {redirect, useRouter} from "next/navigation";
 import React, {useState} from "react";
 
 const LoginPage = () => {
+  const {isAuth, loading: load} = useAppData();
+
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -14,6 +18,9 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return;
 
     try {
       // const {data} = await axios.post(`http://localhost:5001/api/v1/login`, {email}); // when "use client" use -> localhost
@@ -29,6 +36,10 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+
+  if (load) return <Loading></Loading>;
+
+  if (isAuth) redirect("/chat");
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -54,6 +65,7 @@ const LoginPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-4 bg-gray-700 border-gray-600 rounded-lg text-white placeholder-gray-400"
                 placeholder="Enter Your email address"
+                required
               />
             </div>
 
