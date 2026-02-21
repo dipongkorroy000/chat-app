@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import {createNewChat, getMessagesByChat} from "../service/chats/chat.service";
 import ChatHeader from "../components/ChatHeader";
+import ChatMessages from "../components/ChatMessages";
 
 const ChatApp = () => {
   const {isAuth, loading: load, logoutUser, chats, user: loggedInUser, users, fetchChats, setChats} = useAppData();
@@ -20,7 +21,7 @@ const ChatApp = () => {
   const [showAllUsers, setShowAllUsers] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>(null);
-  const [isTypeing, setIsTypeing] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [typeingTimeOut, setTypeingTimeOut] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -42,24 +43,20 @@ const ChatApp = () => {
     }
   }
 
-  async function fetchChat() {
-    const token = Cookies.get("chat-app-token");
-    try {
-      const data = await getMessagesByChat(token as string, selectedUser as string);
-
-      console.log(data);
-
-      setMessages(data.messages);
-      setUser(data.user);
-      await fetchChats();
-    } catch (error) {
-      toast.error("Failed to load messages");
-    }
-  }
-
   useEffect(() => {
     if (selectedUser) {
-      fetchChats();
+      const fetchChat = async () => {
+        const token = Cookies.get("chat-app-token");
+        try {
+          const data = await getMessagesByChat(token as string, selectedUser);
+          setMessages(data.messages);
+          setUser(data.user.user);
+          await fetchChats();
+        } catch {
+          toast.error("Failed to load messages");
+        }
+      };
+      fetchChat();
     }
   }, [selectedUser]);
 
@@ -81,7 +78,9 @@ const ChatApp = () => {
         createChat={createChat}
       />
       <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-2 border-white/10">
-        <ChatHeader></ChatHeader>
+        <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} />
+
+        <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
       </div>
     </div>
   );

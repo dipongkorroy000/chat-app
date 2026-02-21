@@ -101,5 +101,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
 export const useAppData = (): AppContextType => {
   const context = useContext(AppContext);
   if (!context) throw new Error("useAppdata must be used within AppProvider");
+
   return context;
 };
