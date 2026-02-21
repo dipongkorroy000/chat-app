@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {useEffect, useState} from "react";
@@ -8,9 +9,10 @@ import {Message, User} from "../types";
 import ChatSidebar from "../components/ChatSidebar";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
-import {createNewChat, getMessagesByChat} from "../service/chats/chat.service";
+import {createNewChat, getMessagesByChat, sendMessage} from "../service/chats/chat.service";
 import ChatHeader from "../components/ChatHeader";
 import ChatMessages from "../components/ChatMessages";
+import MessageInput from "../components/MessageInput";
 
 const ChatApp = () => {
   const {isAuth, loading: load, logoutUser, chats, user: loggedInUser, users, fetchChats, setChats} = useAppData();
@@ -29,6 +31,51 @@ const ChatApp = () => {
   }, [isAuth, load]);
 
   const handleLogout = () => logoutUser();
+
+  const handleMessageSend = async (e: any, imageFile?: File | null) => {
+    e.preventDefault();
+
+    if ((!message.trim() && !imageFile) || !selectedUser) return;
+    // socket setup
+
+    const token = Cookies.get("chat-app-token");
+
+    try {
+      const formData = new FormData();
+
+      formData.append("chatId", selectedUser);
+
+      if (message.trim()) formData.append("text", message);
+
+      if (imageFile) formData.append("image", imageFile);
+
+      const data = await sendMessage(token as string, formData);
+
+      setMessages((prev) => {
+        const currentMessages = prev || [];
+
+        const messageExists = currentMessages.some((msg) => msg._id === data.messages.chatId);
+
+        if (!messageExists) return [...currentMessages, data.messages];
+
+        return currentMessages;
+      });
+
+      setMessage("");
+
+      const displayText = imageFile ? "📸 image" : message;
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+    }
+  };
+
+  const handleTyping = (value: string) => {
+    setMessage(value);
+
+    if (!selectedUser) return;
+
+    // socket setup
+  };
 
   async function createChat(u: User) {
     const token = Cookies.get("chat-app-token");
@@ -81,6 +128,8 @@ const ChatApp = () => {
         <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} />
 
         <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
+
+        <MessageInput selectedUser={selectedUser} message={message} setMessage={handleTyping} handleMessageSend={handleMessageSend}></MessageInput>
       </div>
     </div>
   );

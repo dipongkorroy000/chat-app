@@ -20,3 +20,14 @@ export const getMessagesByChat = async (token: string, chatId: string) => {
 
   return data;
 };
+
+export const sendMessage = async (token: string, formData: FormData) => {
+  const {data} = await axios.post(`${config.chat_service_base_url}/message`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return data;
+};
