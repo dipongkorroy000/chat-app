@@ -8,9 +8,10 @@ import {login, verifyOTP} from "../service/auth/auth.service";
 import Cookies from "js-cookie";
 import {useAppData} from "../context/AppContext";
 import Loading from "./Loading";
+import toast from "react-hot-toast";
 
 const VerifyOTP = () => {
-  const {isAuth, setIsAuth, setUser, loading: load} = useAppData();
+  const {isAuth, setIsAuth, setUser, loading: load, fetchChats, fetchUsers} = useAppData();
 
   const searchParams = useSearchParams();
   const email: string = searchParams.get("email") || "";
@@ -75,8 +76,7 @@ const VerifyOTP = () => {
     try {
       const data = await verifyOTP(email, otpString);
 
-      console.log(data);
-      alert(data.message);
+      if (data.success) toast.success(data.message);
 
       // cookies setup
       Cookies.set("chat-app-token", data.token, {
@@ -90,6 +90,9 @@ const VerifyOTP = () => {
 
       setUser(data.user);
       setIsAuth(true);
+
+      fetchChats(); // error solve -> auto call
+      fetchUsers();
     } catch (error: any) {
       setError(error.response.data.message);
     } finally {
@@ -104,8 +107,10 @@ const VerifyOTP = () => {
     try {
       const data = await login(email);
 
-      alert(data.message);
-      setTimer(60);
+      if (data.success) {
+        toast.success(data.message);
+        setTimer(60);
+      }
     } catch (error: any) {
       setError(error.response.data.message);
     } finally {

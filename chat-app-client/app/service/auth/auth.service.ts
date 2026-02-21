@@ -20,3 +20,9 @@ export const profile = async (token: string) => {
 
   return data;
 };
+
+export const getChatUsers = async (token: string) => {
+  const {data} = await axios.get(`${config.user_service_base_url}/get-users`, {headers: {Authorization: `Bearer ${token}`}});
+
+  return data.users;
+};

@@ -78,14 +78,14 @@ export const verifyUser = catchAsync(async (req, res) => {
 
 export const getUsers = catchAsync(async (req, res) => {
   const users = await User.find();
-  res.json({success: true, message: "User retrieved successfully", users});
+  res.json({success: true, message: "Users retrieved successfully", users});
 });
 
 export const myProfile = catchAsync(async (req: AuthenticatedRequest, res) => {
   const {_id} = req.token as JwtPayload;
   const user = await User.findById(_id);
 
-  res.status(200).json({success: true, message: "User retrieved successfully", user});
+  res.status(200).json({success: true, message: "Profile retrieved successfully", user});
 });
 
 export const updateProfile = catchAsync(async (req: AuthenticatedRequest, res) => {

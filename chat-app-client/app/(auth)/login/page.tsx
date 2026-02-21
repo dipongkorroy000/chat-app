@@ -7,6 +7,7 @@ import {login} from "@/app/service/auth/auth.service";
 import {ArrowRightToLine, Loader2, Mail} from "lucide-react";
 import {redirect, useRouter} from "next/navigation";
 import React, {useState} from "react";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const {isAuth, loading: load} = useAppData();
@@ -25,13 +26,12 @@ const LoginPage = () => {
     try {
       // const {data} = await axios.post(`http://localhost:5001/api/v1/login`, {email}); // when "use client" use -> localhost
       const data = await login(email);
-
-      console.log(data);
-      alert(data.message);
-      router.push(`/verify?email=${email}`);
+      if (data.success) {
+        toast.success(data.message);
+        router.push(`/verify?email=${email}`);
+      }
     } catch (error: any) {
-      alert(error.response.data.message);
-      console.log(error);
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }

@@ -140,7 +140,7 @@ export const getMessagesByChat = catchAsync(async (req: AuthenticatedRequest, re
 
     // socket work
 
-    res.json({success: true, message: messages, user: data});
+    res.json({success: true, messages: messages, user: data});
   } catch (error) {
     console.log(error);
     res.json({
