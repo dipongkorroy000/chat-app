@@ -94,11 +94,24 @@ const VerifyOTP = () => {
       // await fetchUsers();
       // await fetchChats(); // error solve -> auto call
     } catch (error: any) {
-      setError(error.response.data.message);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const token = Cookies.get("chat-app-token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    fetchUsers();
+    fetchChats();
+    // setIsAuth(true);
+    // setLoading(false);
+  }, []);
 
   const handleResendOTP = async () => {
     setLoading(true);
@@ -118,9 +131,11 @@ const VerifyOTP = () => {
     }
   };
 
-  if (load) return <Loading></Loading>;
+  useEffect(() => {
+    if (isAuth) router.push("/chat");
+  }, [isAuth, router]);
 
-  if (isAuth) redirect("/chat");
+  if (load) return <Loading></Loading>;
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

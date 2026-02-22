@@ -28,7 +28,6 @@ const ChatApp = () => {
   const [typingTimeOut, setTypingTimeOut] = useState<NodeJS.Timeout | null>(null);
 
   const {onlineUsers, socket} = SocketData();
-  console.log("onlineUsers", onlineUsers);
 
   useEffect(() => {
     if (!isAuth && !load) redirect("/login");
@@ -157,6 +156,26 @@ const ChatApp = () => {
       }
     });
 
+    socket?.on("messagesSeen", (data) => {
+      console.log(`Message seen by: `, data);
+
+      if (selectedUser === data.chatId) {
+        setMessages((prev) => {
+          if (!prev) return null;
+
+          return prev.map((msg) => {
+            if (msg.sender === loggedInUser?._id && data.messageIds && data.messageIds.includes(msg._id)) {
+              return {...msg, seen: true, seenAt: new Date()};
+            } else if (msg.sender === loggedInUser?._id && !data.messageIds) {
+              return {...msg, seen: true, seenAt: new Date()};
+            }
+
+            return msg;
+          });
+        });
+      }
+    });
+
     socket?.on("userTyping", (data) => {
       console.log("received user typing", data);
 
@@ -171,6 +190,7 @@ const ChatApp = () => {
 
     return () => {
       socket?.off("newMessage");
+      socket?.off("messagesSeen");
       socket?.off("userTyping");
       socket?.off("userStoppedTyping");
     };
