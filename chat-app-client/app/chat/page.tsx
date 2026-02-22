@@ -79,7 +79,7 @@ const ChatApp = () => {
 
       const displayText = imageFile ? "📸 image" : message;
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      toast.error(error.message);
     }
   };
 
@@ -110,7 +110,53 @@ const ChatApp = () => {
     setTypingTimeOut(timeout);
   };
 
+  const moveChatToTop = (chatId: string, newMessage: any, updatedUnseenCount = true) => {
+    setChats((prev) => {
+      if (!prev) return null;
+
+      const updatedChats = [...prev];
+      const chatIndex = updatedChats.findIndex((chat) => chat.chat._id === chatId);
+
+      if (chatIndex !== -1) {
+        const [moveChat] = updatedChats.splice(chatIndex, 1);
+
+        const updatedChat = {
+          ...moveChat,
+          chat: {
+            ...moveChat.chat,
+            latestMessage: {
+              text: newMessage.text,
+              sender: newMessage.sender,
+            },
+            updatedAt: new Date(),
+            unseenCount: updatedUnseenCount && newMessage.sender !== loggedInUser?._id ? (moveChat.chat.unseenCount || 0) + 1 : moveChat.chat.unseenCount || 0,
+          },
+        };
+
+        updatedChats.unshift(updatedChat);
+      }
+
+      return updatedChats;
+    });
+  };
+
   useEffect(() => {
+    socket?.on("newMessage", (message) => {
+      console.log(`Received new message: `, message);
+
+      if (selectedUser === message.chatId) {
+        setMessages((prev) => {
+          const currentMessages = prev || [];
+          const messageExists = currentMessages.some((msg) => msg._id === message._id);
+
+          if (!messageExists) return [...currentMessages, message];
+          return currentMessages;
+        });
+
+        moveChatToTop(message.chatId, message, false);
+      }
+    });
+
     socket?.on("userTyping", (data) => {
       console.log("received user typing", data);
 
@@ -124,10 +170,24 @@ const ChatApp = () => {
     });
 
     return () => {
+      socket?.off("newMessage");
       socket?.off("userTyping");
       socket?.off("userStoppedTyping");
     };
-  }, [socket, selectedUser, loggedInUser?._id]);
+  }, [socket, selectedUser, setChats, loggedInUser?._id]);
+
+  const resetUnseenCount = (chatId: string) => {
+    setChats((prev) => {
+      if (!prev) return null;
+
+      return prev.map((chat) => {
+        if (chat.chat._id === chatId) {
+          return {...chat, chat: {...chat.chat, unseenCount: 0}};
+        }
+        return chat;
+      });
+    });
+  };
 
   async function createChat(u: User) {
     const token = Cookies.get("chat-app-token");
@@ -159,6 +219,8 @@ const ChatApp = () => {
       startTransition(async () => {
         await fetchChat();
         setIsTyping(false);
+
+        resetUnseenCount(selectedUser);
 
         socket?.emit("joinChat", selectedUser);
       });
