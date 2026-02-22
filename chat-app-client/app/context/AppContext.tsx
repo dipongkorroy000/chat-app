@@ -82,12 +82,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
         }
 
         // batch updates safely
-        startTransition(() => {
-          fetchUser();
+        startTransition(async () => {
+          await fetchUser();
           setIsAuth(true);
           setLoading(false);
-          fetchUsers();
-          fetchChats();
+          await fetchUsers();
+          await fetchChats();
         });
       } catch (error) {
         console.error(error);

@@ -2,12 +2,13 @@
 import {Server, Socket} from "socket.io";
 import http from "http";
 import app from "../../app";
+import env from "../env";
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // controls access for WebSocket connections.
+    origin: env.frontend_url, // controls access for WebSocket connections.
     methods: ["GET", "POST"],
   },
 });

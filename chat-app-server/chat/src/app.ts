@@ -3,6 +3,7 @@ import cors from "cors";
 import express, {Application, Request, Response} from "express";
 import path from "path";
 import router from "./app/routes/chat";
+import env from "./app/env";
 
 const app: Application = express();
 
@@ -11,7 +12,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:3000", // controls access for HTTP requests (REST API calls, static assets)
+    origin: env.frontend_url, // controls access for HTTP requests (REST API calls, static assets)
   })
 );
 

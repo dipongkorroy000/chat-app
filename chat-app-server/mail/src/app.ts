@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, {Application, Request, Response} from "express";
 import path from "path";
+import env from "./app/env";
 
 const app: Application = express();
 
@@ -10,7 +11,7 @@ app.use(express.static(path.join(__dirname, "../public"))); // Adjusted path
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:3000",
+    origin: env.frontend_url,
   })
 );
 
