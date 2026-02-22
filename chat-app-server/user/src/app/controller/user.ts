@@ -15,7 +15,7 @@ export const loginUser = catchAsync(async (req, res) => {
   const rateLimit = await redisClient.get(rateLimitKey);
 
   if (rateLimit) {
-    res.send(429).json({success: false, message: "Too may requests. Please wait before requesting new OTP"});
+    res.send(429).send({success: false, message: "Too may requests. Please wait before requesting new OTP"});
     return;
   }
 
@@ -91,6 +91,8 @@ export const myProfile = catchAsync(async (req: AuthenticatedRequest, res) => {
 export const updateProfile = catchAsync(async (req: AuthenticatedRequest, res) => {
   const {_id} = req.token as JwtPayload;
   const {name, bio, about} = req.body;
+  
+  console.log("profile data", req.body);
 
   const updateData: Partial<Pick<IUser, "name" | "bio" | "about">> = {};
 
@@ -110,7 +112,9 @@ export const updateProfile = catchAsync(async (req: AuthenticatedRequest, res) =
     success: true,
     message: "Update successfully",
     user: {
+      _id,
       name: updatedUser.name,
+      email: updatedUser.email,
       bio: updatedUser.bio,
       about: updatedUser.about,
     },

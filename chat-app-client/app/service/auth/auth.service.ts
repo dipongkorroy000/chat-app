@@ -26,3 +26,9 @@ export const getChatUsers = async (token: string) => {
 
   return data.users;
 };
+
+export const updateProfile = async (token: string, payload: {name: string | undefined; bio: string | undefined; about: string | undefined}) => {
+  const {data} = await axios.patch(`${config.user_service_base_url}/update-profile`, payload, {headers: {Authorization: `Bearer ${token}`}});
+
+  return data.user;
+};

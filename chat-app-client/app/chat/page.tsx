@@ -77,6 +77,8 @@ const ChatApp = () => {
       setMessage("");
 
       const displayText = imageFile ? "📸 image" : message;
+
+      moveChatToTop(selectedUser, {text: displayText, sender: data.sender}, false);
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -108,7 +110,7 @@ const ChatApp = () => {
 
     setTypingTimeOut(timeout);
   };
-
+  console.log(messages);
   const moveChatToTop = (chatId: string, newMessage: any, updatedUnseenCount = true) => {
     setChats((prev) => {
       if (!prev) return null;
@@ -153,6 +155,8 @@ const ChatApp = () => {
         });
 
         moveChatToTop(message.chatId, message, false);
+      } else {
+        moveChatToTop(message.chatId, message, true);
       }
     });
 

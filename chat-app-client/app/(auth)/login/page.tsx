@@ -26,12 +26,13 @@ const LoginPage = () => {
     try {
       // const {data} = await axios.post(`http://localhost:5001/api/v1/login`, {email}); // when "use client" use -> localhost
       const data = await login(email);
+
       if (data.success) {
-        toast.success(data.message);
         router.push(`/verify?email=${email}`);
       }
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      const message = error === 429 && "Too many requested! Please wait a minute"
+      toast.error(error.message || message);
     } finally {
       setLoading(false);
     }
