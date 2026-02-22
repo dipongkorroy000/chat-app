@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {useEffect, useState} from "react";
+import {startTransition, useEffect, useState} from "react";
 import {useAppData} from "../context/AppContext";
 import {redirect} from "next/navigation";
 import Loading from "../components/Loading";
@@ -25,11 +25,11 @@ const ChatApp = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [typeingTimeOut, setTypeingTimeOut] = useState<NodeJS.Timeout | null>(null);
+  const [typingTimeOut, setTypingTimeOut] = useState<NodeJS.Timeout | null>(null);
 
-  const {onlineUsers} = SocketData();
+  const {onlineUsers, socket} = SocketData();
   console.log("onlineUsers", onlineUsers);
-  
+
   useEffect(() => {
     if (!isAuth && !load) redirect("/login");
   }, [isAuth, load]);
@@ -40,7 +40,17 @@ const ChatApp = () => {
     e.preventDefault();
 
     if ((!message.trim() && !imageFile) || !selectedUser) return;
+
     // socket setup
+    if (typingTimeOut) {
+      clearTimeout(typingTimeOut);
+      setTypingTimeOut(null);
+    }
+
+    socket?.emit("stopTyping", {
+      chatId: selectedUser,
+      userId: loggedInUser?._id,
+    });
 
     const token = Cookies.get("chat-app-token");
 
@@ -76,10 +86,48 @@ const ChatApp = () => {
   const handleTyping = (value: string) => {
     setMessage(value);
 
-    if (!selectedUser) return;
+    if (!selectedUser || !socket) return;
 
     // socket setup
+    if (value.trim()) {
+      socket.emit("typing", {
+        chatId: selectedUser,
+        userId: loggedInUser?._id,
+      });
+    }
+
+    if (typingTimeOut) {
+      clearTimeout(typingTimeOut);
+    }
+
+    const timeout = setTimeout(() => {
+      socket.emit("stopTyping", {
+        chatId: selectedUser,
+        userId: loggedInUser?._id,
+      });
+    }, 2000); // 2 second after after call
+
+    setTypingTimeOut(timeout);
   };
+
+  useEffect(() => {
+    socket?.on("userTyping", (data) => {
+      console.log("received user typing", data);
+
+      if (data.chatId === selectedUser && data.userId !== loggedInUser?._id) setIsTyping(true);
+    });
+
+    socket?.on("userStoppedTyping", (data) => {
+      console.log("received user stopped typing", data);
+
+      if (data.chatId === selectedUser && data.userId !== loggedInUser?._id) setIsTyping(false);
+    });
+
+    return () => {
+      socket?.off("userTyping");
+      socket?.off("userStoppedTyping");
+    };
+  }, [socket, selectedUser, loggedInUser?._id]);
 
   async function createChat(u: User) {
     const token = Cookies.get("chat-app-token");
@@ -94,22 +142,40 @@ const ChatApp = () => {
     }
   }
 
+  const fetchChat = async () => {
+    const token = Cookies.get("chat-app-token");
+    try {
+      const data = await getMessagesByChat(token as string, selectedUser as string);
+      setMessages(data.messages);
+      setUser(data.user.user);
+      await fetchChats();
+    } catch {
+      toast.error("Failed to load messages");
+    }
+  };
+
   useEffect(() => {
     if (selectedUser) {
-      const fetchChat = async () => {
-        const token = Cookies.get("chat-app-token");
-        try {
-          const data = await getMessagesByChat(token as string, selectedUser);
-          setMessages(data.messages);
-          setUser(data.user.user);
-          // await fetchChats();
-        } catch {
-          toast.error("Failed to load messages");
-        }
+      startTransition(async () => {
+        await fetchChat();
+        setIsTyping(false);
+
+        socket?.emit("joinChat", selectedUser);
+      });
+      return () => {
+        socket?.emit("leaveChat", selectedUser);
+        setMessages(null);
       };
-      fetchChat();
     }
-  }, [selectedUser]);
+  }, [selectedUser, socket]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeOut) {
+        clearTimeout(typingTimeOut);
+      }
+    };
+  }, [typingTimeOut]);
 
   if (load) return <Loading></Loading>;
 
@@ -127,9 +193,10 @@ const ChatApp = () => {
         setSelectedUser={setSelectedUser}
         users={users}
         createChat={createChat}
+        onlineUsers={onlineUsers}
       />
       <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-2 border-white/10">
-        <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} />
+        <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} onlineUsers={onlineUsers} />
 
         <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
 
