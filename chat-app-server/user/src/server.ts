@@ -1,6 +1,7 @@
 import {Server} from "http";
 import app from "./app";
 import env from "./app/env";
+// import {connectRabbitMQ, closeRabbitMQ} from "./app/config/rabbitmq";
 import {connectRabbitMQ} from "./app/config/rabbitmq";
 import {connectMongo} from "./app/config/db";
 import {connectRedis} from "./app/config/redis";
@@ -10,9 +11,7 @@ let server: Server;
 async function main() {
   try {
     await connectMongo();
-
     await connectRabbitMQ();
-
     await connectRedis();
 
     server = app.listen(env.port, () => {
@@ -25,17 +24,26 @@ async function main() {
 
 main();
 
-process.on("unhandledRejection", (err) => {
-  console.log(`😈 unhandledRejection is detected , shutting down ...`, err);
+const gracefulShutdown = async () => {
+  console.log("⚠️ Shutting down gracefully...");
   if (server) {
     server.close(() => {
-      process.exit(1);
+      console.log("❌ HTTP server closed");
     });
   }
-  process.exit(1);
+  // await closeRabbitMQ();
+  process.exit(0);
+};
+
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
+
+process.on("unhandledRejection", async (err) => {
+  console.log("😈 Unhandled rejection:", err);
+  await gracefulShutdown();
 });
 
-process.on("uncaughtException", () => {
-  console.log(`😈 uncaughtException is detected , shutting down ...`);
-  process.exit(1);
+process.on("uncaughtException", async (err) => {
+  console.log("😈 Uncaught exception:", err);
+  await gracefulShutdown();
 });

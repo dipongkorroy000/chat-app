@@ -51,6 +51,16 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
     }
   }
 
+  async function fetchUser() {
+    try {
+      const token = Cookies.get("chat-app-token");
+      const data = await profile(token as string);
+
+      setUser(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async function fetchUsers() {
     try {
       const token = Cookies.get("chat-app-token");
@@ -71,15 +81,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
           return;
         }
 
-        const [userData, chatsData, usersData] = await Promise.all([profile(token), getUserChats(token), getChatUsers(token)]);
-
         // batch updates safely
         startTransition(() => {
-          setUser(userData);
-          setChats(chatsData);
-          setUsers(usersData);
+          fetchUser();
           setIsAuth(true);
           setLoading(false);
+          fetchUsers();
+          fetchChats();
         });
       } catch (error) {
         console.error(error);

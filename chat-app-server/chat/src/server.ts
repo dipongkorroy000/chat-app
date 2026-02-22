@@ -1,16 +1,13 @@
-import {Server} from "http";
-import mongoose from "mongoose";
-import app from "./app";
+// server.ts
 import env from "./app/env";
 import {connectMongo} from "./app/config/db";
-
-let server: Server;
+import {server} from "./app/config/socket";
 
 async function main() {
   try {
-    connectMongo();
+    await connectMongo();
 
-    server = app.listen(env.port, () => {
+    server.listen(env.port, () => {
       console.log(`app is listening on port ${env.port}`);
     });
   } catch (err) {

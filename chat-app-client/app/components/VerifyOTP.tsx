@@ -91,8 +91,8 @@ const VerifyOTP = () => {
       setUser(data.user);
       setIsAuth(true);
 
-      fetchChats(); // error solve -> auto call
-      fetchUsers();
+      // await fetchUsers();
+      // await fetchChats(); // error solve -> auto call
     } catch (error: any) {
       setError(error.response.data.message);
     } finally {

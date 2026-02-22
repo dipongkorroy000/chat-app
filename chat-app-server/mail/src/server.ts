@@ -8,9 +8,9 @@ let server: Server;
 
 async function main() {
   try {
-    connectMongo();
+    await connectMongo();
 
-    startSendOTPConsumer();
+    await startSendOTPConsumer();
 
     server = app.listen(env.port, () => {
       console.log(`app is listening on port ${env.port}`);

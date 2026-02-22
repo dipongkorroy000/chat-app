@@ -132,7 +132,7 @@ const ChatSidebar = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`font-semibold truncate ${isSelected ? "text-white" : "text-gray-200"}`}>{chat.user.user.name}</span>
+                        <span className={`font-semibold truncate ${isSelected ? "text-white" : "text-gray-200"}`}>{chat.user.user?.name}</span>
                         {unseenCount > 0 && (
                           <div className="bg-red-600 text-white font-bold rounded-full `min-w-[22px]` h-5.5 flex items-center justify-center px-2">
                             {unseenCount > 99 ? "99+" : unseenCount}

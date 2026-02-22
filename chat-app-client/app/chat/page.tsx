@@ -13,6 +13,7 @@ import {createNewChat, getMessagesByChat, sendMessage} from "../service/chats/ch
 import ChatHeader from "../components/ChatHeader";
 import ChatMessages from "../components/ChatMessages";
 import MessageInput from "../components/MessageInput";
+import {SocketData} from "../context/SocketContext";
 
 const ChatApp = () => {
   const {isAuth, loading: load, logoutUser, chats, user: loggedInUser, users, fetchChats, setChats} = useAppData();
@@ -26,6 +27,9 @@ const ChatApp = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [typeingTimeOut, setTypeingTimeOut] = useState<NodeJS.Timeout | null>(null);
 
+  const {onlineUsers} = SocketData();
+  console.log("onlineUsers", onlineUsers);
+  
   useEffect(() => {
     if (!isAuth && !load) redirect("/login");
   }, [isAuth, load]);
@@ -98,7 +102,7 @@ const ChatApp = () => {
           const data = await getMessagesByChat(token as string, selectedUser);
           setMessages(data.messages);
           setUser(data.user.user);
-          await fetchChats();
+          // await fetchChats();
         } catch {
           toast.error("Failed to load messages");
         }
