@@ -1,4 +1,4 @@
-import {ObjectId, Types} from "mongoose";
+import {Types} from "mongoose";
 import {publishToQueue} from "../config/rabbitmq";
 import {redisClient} from "../config/redis";
 import {AuthenticatedRequest} from "../middleware/isAuth";

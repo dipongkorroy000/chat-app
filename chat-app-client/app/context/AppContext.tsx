@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, {createContext, ReactNode, startTransition, useContext, useEffect, useState} from "react";
+import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import Cookies from "js-cookie";
 import {getChatUsers, profile} from "../service/auth/auth.service";
 import toast, {Toaster} from "react-hot-toast";
@@ -28,7 +28,7 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
-export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
+export const AppProvider: React.FC<AppProviderProps> = ({children}: {children: ReactNode}) => {
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[] | null>(null);
   const [chats, setChats] = useState<Chats[] | null>(null);
@@ -84,13 +84,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
         }
 
         // batch updates safely
-        startTransition(async () => {
-          await fetchUser();
-          setIsAuth(true);
-          setLoading(false);
-          await fetchUsers();
-          await fetchChats();
-        });
+        // startTransition(async () => {}); remove below
+        await fetchUser();
+        setIsAuth(true);
+        setLoading(false);
+        await fetchUsers();
+        await fetchChats();
       } catch (error) {
         console.error(error);
         setLoading(false);
@@ -110,7 +109,23 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
 
 export const useAppData = (): AppContextType => {
   const context = useContext(AppContext);
-  if (!context) throw new Error("useAppdata must be used within AppProvider");
+  // if (!context) throw new Error("useAppdata must be used within AppProvider");
+
+  if (!context) {
+    return {
+      user: null,
+      loading: false,
+      isAuth: false,
+      setUser: () => {},
+      setIsAuth: () => {},
+      logoutUser: async () => {},
+      fetchUsers: async () => {},
+      fetchChats: async () => {},
+      chats: null,
+      users: null,
+      setChats: () => {},
+    };
+  }
 
   return context;
 };

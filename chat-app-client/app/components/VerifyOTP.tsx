@@ -3,7 +3,7 @@
 
 import {ArrowRight, ChevronLeft, Loader2, Lock} from "lucide-react";
 import {useRouter, useSearchParams} from "next/navigation";
-import {startTransition, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {login, verifyOTP} from "../service/auth/auth.service";
 import Cookies from "js-cookie";
 import {useAppData} from "../context/AppContext";
@@ -94,7 +94,8 @@ const VerifyOTP = () => {
       // await fetchUsers();
       // await fetchChats(); // error solve -> auto call
     } catch (error: any) {
-      setError(error.message);
+      const message = error.response?.data?.message || error.message || "Something went wrong";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -106,13 +107,10 @@ const VerifyOTP = () => {
       setLoading(false);
       return;
     }
-
-    startTransition(async () => {
+    (async () => {
       await fetchUsers();
       await fetchChats();
-    });
-    // setIsAuth(true);
-    // setLoading(false);
+    })();
   }, [isAuth]);
 
   const handleResendOTP = async () => {
@@ -127,7 +125,8 @@ const VerifyOTP = () => {
         setTimer(60);
       }
     } catch (error: any) {
-      setError(error.message);
+      const message = error.response?.data?.message || error.message || "Something went wrong";
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -5,7 +5,7 @@ import Loading from "@/app/components/Loading";
 import {useAppData} from "@/app/context/AppContext";
 import {login} from "@/app/service/auth/auth.service";
 import {ArrowRightToLine, Loader2, Mail} from "lucide-react";
-import {redirect, useRouter} from "next/navigation";
+import {useRouter} from "next/navigation";
 import React, {useState} from "react";
 import toast from "react-hot-toast";
 
@@ -31,8 +31,8 @@ const LoginPage = () => {
         router.push(`/verify?email=${email}`);
       }
     } catch (error: any) {
-      const message = error === 429 && "Too many requested! Please wait a minute"
-      toast.error(error.message || message);
+      const message = error.response?.status === 429 ? "Too many requests! Please wait a minute" : error.message;
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -40,7 +40,9 @@ const LoginPage = () => {
 
   if (load) return <Loading></Loading>;
 
-  if (isAuth) redirect("/chat");
+  if (isAuth) {
+    router.push("/chat");
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

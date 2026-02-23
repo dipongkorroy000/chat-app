@@ -85,7 +85,7 @@ const ChatSidebar = ({
             {/** user list */}
             <div className="space-y-2 overflow-y-auto h-full pb-4">
               {users
-                ?.filter((u) => u._id !== loggedInUser?._id && u.name.toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase()))
+                ?.filter((u) => u._id !== loggedInUser?._id && (u.name || "").toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase()))
                 .map((u) => (
                   <button
                     onClick={() => createChat(u)}
@@ -102,7 +102,7 @@ const ChatSidebar = ({
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <span className="font-medium text-white">{u.name}</span>
+                        <span className="font-medium text-white">{u.name || ""}</span>
                         <div className="text-xs text-gray-400 mt-0.5">
                           {/** to show online offline text */}
                           {onlineUsers?.includes(u._id) ? "Online" : "Offline"}
@@ -138,7 +138,7 @@ const ChatSidebar = ({
                         <UserCircle className="w-7 h-7 text-gray-300" />
                         {/** online user work */}
                       </div>
-                      {onlineUsers?.includes(chat.user.user._id) && (
+                      {onlineUsers?.includes(chat.user?.user?._id) && (
                         <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-gray-900"></span>
                       )}
                     </div>
@@ -146,7 +146,7 @@ const ChatSidebar = ({
                       <div className="flex items-center justify-between mb-1">
                         <span className={`font-semibold truncate ${isSelected ? "text-white" : "text-gray-200"}`}>{chat.user.user?.name}</span>
                         {unseenCount > 0 && (
-                          <div className="bg-red-600 text-white font-bold rounded-full `min-w-[22px]` h-5.5 flex items-center justify-center px-2">
+                          <div className="bg-red-600 text-white font-bold rounded-full min-w-[22px] h-5.5 flex items-center justify-center px-2">
                             {unseenCount > 99 ? "99+" : unseenCount}
                           </div>
                         )}
@@ -184,7 +184,7 @@ const ChatSidebar = ({
         </Link>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 columns-lg hover:bg-red-600 transition-colors text-red-500 cursor-pointer hover:text-white"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors text-red-500 cursor-pointer hover:text-white"
         >
           <div className="p-1.5 bg-red-600 rounded-lg">
             <LogOut className="w-4 h-4 text-gray-300" />

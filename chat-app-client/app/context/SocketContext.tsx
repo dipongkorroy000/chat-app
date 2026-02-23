@@ -15,11 +15,7 @@ const SocketContext = createContext<SocketContextType>({
   onlineUsers: [],
 });
 
-interface ProviderProps {
-  children: ReactNode;
-}
-
-export const SocketProvider = ({children}: ProviderProps) => {
+export const SocketProvider = ({children}: {children: ReactNode}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const {user} = useAppData();
