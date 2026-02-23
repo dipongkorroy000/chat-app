@@ -4,13 +4,14 @@ import nodemailer from "nodemailer";
 
 async function connectConsumer(attempt = 1, maxAttempts = 3, delay = 2000) {
   try {
-    const connection = await amqplib.connect({
-      protocol: "amqp",
-      hostname: env.rabbitMQ.hostname,
-      port: Number(env.rabbitMQ.port),
-      username: env.rabbitMQ.username,
-      password: env.rabbitMQ.password,
-    });
+    // const connection = await amqplib.connect({
+    //   protocol: "amqp",
+    //   hostname: env.rabbitMQ.hostname,
+    //   port: Number(env.rabbitMQ.port),
+    //   username: env.rabbitMQ.username,
+    //   password: env.rabbitMQ.password,
+    // });
+    const connection = await amqplib.connect(env.rabbitmq_url as string);
 
     connection.on("error", (err) => {
       console.error("❌ RabbitMQ connection error:", err);

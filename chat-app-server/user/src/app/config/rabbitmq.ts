@@ -5,17 +5,19 @@ let channel: amqplib.Channel;
 
 async function tryConnectRabbitMQ(attempt = 1, maxAttempts = 3, delay = 2000): Promise<void> {
   try {
-    if (!env.rabbitMQ.hostname || !env.rabbitMQ.port || !env.rabbitMQ.username || !env.rabbitMQ.password) {
-      throw Error("❌ Env to rabbitMQ");
-    }
+    // ----- for development ------
+    // if (!env.rabbitMQ.hostname || !env.rabbitMQ.port || !env.rabbitMQ.username || !env.rabbitMQ.password) {
+    //   throw Error("❌ Env to rabbitMQ");
+    // }
 
-    const connection = await amqplib.connect({
-      protocol: "amqp",
-      hostname: env.rabbitMQ.hostname,
-      port: Number(env.rabbitMQ.port),
-      username: env.rabbitMQ.username,
-      password: env.rabbitMQ.password,
-    });
+    // const connection = await amqplib.connect({
+    //   protocol: "amqp",
+    //   hostname: env.rabbitMQ.hostname,
+    //   port: Number(env.rabbitMQ.port),
+    //   username: env.rabbitMQ.username,
+    //   password: env.rabbitMQ.password,
+    // });
+    const connection = await amqplib.connect(env.rabbitmq_url as string);
 
     connection.on("error", (err) => {
       console.error("❌ RabbitMQ connection error:", err);

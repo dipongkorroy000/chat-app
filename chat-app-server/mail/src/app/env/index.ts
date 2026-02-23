@@ -24,6 +24,7 @@ export default {
     username: process.env.USERNAME || "admin",
     password: process.env.PASSWORD || "admin",
   },
+  rabbitmq_url: process.env.RABBITMQ_URL,
 
   nodemailer: {
     user: process.env.NODEMAILER_USER,
