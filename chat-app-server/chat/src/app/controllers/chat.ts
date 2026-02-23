@@ -48,7 +48,7 @@ export const getUserChats = catchAsync(async (req: AuthenticatedRequest, res) =>
           chat: {...chat.toObject(), latestMessage: chat.latestMessage || null, unseenCount},
         };
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         return {
           user: {_id: otherUserId, name: "Unknown User"},
           chat: {...chat.toObject(), latestMessage: chat.latestMessage || null, unseenCount},
@@ -180,7 +180,7 @@ export const getMessagesByChat = catchAsync(async (req: AuthenticatedRequest, re
 
     res.json({success: true, messages: messages, user: data});
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.json({
       messages: messages,
       user: {_id: otherUserId, name: "Unknown User"},

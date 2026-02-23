@@ -2,8 +2,8 @@
 "use client";
 
 import {ArrowRight, ChevronLeft, Loader2, Lock} from "lucide-react";
-import {redirect, useRouter, useSearchParams} from "next/navigation";
-import {useEffect, useRef, useState} from "react";
+import {useRouter, useSearchParams} from "next/navigation";
+import {startTransition, useEffect, useRef, useState} from "react";
 import {login, verifyOTP} from "../service/auth/auth.service";
 import Cookies from "js-cookie";
 import {useAppData} from "../context/AppContext";
@@ -107,11 +107,13 @@ const VerifyOTP = () => {
       return;
     }
 
-    fetchUsers();
-    fetchChats();
+    startTransition(async () => {
+      await fetchUsers();
+      await fetchChats();
+    });
     // setIsAuth(true);
     // setLoading(false);
-  }, []);
+  }, [isAuth]);
 
   const handleResendOTP = async () => {
     setLoading(true);
@@ -125,7 +127,7 @@ const VerifyOTP = () => {
         setTimer(60);
       }
     } catch (error: any) {
-      setError(error.response.data.message);
+      setError(error.message);
     } finally {
       setLoading(false);
     }

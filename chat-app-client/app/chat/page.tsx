@@ -110,7 +110,7 @@ const ChatApp = () => {
 
     setTypingTimeOut(timeout);
   };
-  console.log(messages);
+
   const moveChatToTop = (chatId: string, newMessage: any, updatedUnseenCount = true) => {
     setChats((prev) => {
       if (!prev) return null;
@@ -143,7 +143,7 @@ const ChatApp = () => {
 
   useEffect(() => {
     socket?.on("newMessage", (message) => {
-      console.log(`Received new message: `, message);
+      // console.log(`Received new message: `, message);
 
       if (selectedUser === message.chatId) {
         setMessages((prev) => {
@@ -161,7 +161,7 @@ const ChatApp = () => {
     });
 
     socket?.on("messagesSeen", (data) => {
-      console.log(`Message seen by: `, data);
+      // console.log(`Message seen by: `, data);
 
       if (selectedUser === data.chatId) {
         setMessages((prev) => {
@@ -181,13 +181,13 @@ const ChatApp = () => {
     });
 
     socket?.on("userTyping", (data) => {
-      console.log("received user typing", data);
+      // console.log("received user typing", data);
 
       if (data.chatId === selectedUser && data.userId !== loggedInUser?._id) setIsTyping(true);
     });
 
     socket?.on("userStoppedTyping", (data) => {
-      console.log("received user stopped typing", data);
+      // console.log("received user stopped typing", data);
 
       if (data.chatId === selectedUser && data.userId !== loggedInUser?._id) setIsTyping(false);
     });

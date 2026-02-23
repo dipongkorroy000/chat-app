@@ -91,8 +91,6 @@ export const myProfile = catchAsync(async (req: AuthenticatedRequest, res) => {
 export const updateProfile = catchAsync(async (req: AuthenticatedRequest, res) => {
   const {_id} = req.token as JwtPayload;
   const {name, bio, about} = req.body;
-  
-  console.log("profile data", req.body);
 
   const updateData: Partial<Pick<IUser, "name" | "bio" | "about">> = {};
 

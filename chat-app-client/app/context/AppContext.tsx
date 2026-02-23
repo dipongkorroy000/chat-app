@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, {createContext, ReactNode, startTransition, useContext, useEffect, useState} from "react";
@@ -46,8 +47,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
     try {
       const data = await getUserChats(token as string);
       setChats(data);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.log(error.message);
     }
   }
 
@@ -57,18 +58,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({children}) => {
       const data = await profile(token as string);
 
       setUser(data);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.log(error.message);
     }
   }
+
   async function fetchUsers() {
     try {
       const token = Cookies.get("chat-app-token");
       const data = await getChatUsers(token as string);
 
       setUsers(data);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.log(error.message);
     }
   }
 
