@@ -2,7 +2,7 @@ import amqplib from "amqplib";
 import env from "../env";
 import nodemailer from "nodemailer";
 
-export const startSendOTPConsumer = async () => {
+async function connectConsumer(attempt = 1, maxAttempts = 3, delay = 2000) {
   try {
     const connection = await amqplib.connect({
       protocol: "amqp",
@@ -11,16 +11,15 @@ export const startSendOTPConsumer = async () => {
       username: env.rabbitMQ.username,
       password: env.rabbitMQ.password,
     });
+
     connection.on("error", (err) => {
-      console.error("❌ User RabbitMQ connection error:", err);
+      console.error("❌ RabbitMQ connection error:", err);
     });
 
     const channel = await connection.createChannel();
-
     const queueName = "send-otp";
 
     await channel.assertQueue(queueName, {durable: true});
-
     console.log("✅ Mail service consumer started, listening for OTP emails");
 
     channel.consume(queueName, async (msg) => {
@@ -40,7 +39,7 @@ export const startSendOTPConsumer = async () => {
             subject,
             text: body,
           });
-          console.log(`OPT mail send to ${to}`);
+          console.log(`OTP mail sent to ${to}`);
 
           channel.ack(msg);
         } catch (error) {
@@ -49,6 +48,18 @@ export const startSendOTPConsumer = async () => {
       }
     });
   } catch (error) {
-    console.log("❌ Mail Failed to start rabbitMQ consumer");
+    console.error(`❌ Failed to start RabbitMQ consumer (attempt ${attempt})`, error);
+
+    if (attempt < maxAttempts) {
+      console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
+      await new Promise((res) => setTimeout(res, delay));
+      return connectConsumer(attempt + 1, maxAttempts, delay); // recursive retry
+    } else {
+      console.error("❌ All attempts to connect RabbitMQ consumer failed");
+    }
   }
+}
+
+export const startSendOTPConsumer = async () => {
+  await connectConsumer();
 };
