@@ -3,7 +3,7 @@ import env from "../env";
 
 let channel: amqplib.Channel;
 
-async function tryConnectRabbitMQ(attempt = 1, maxAttempts = 3, delay = 2000): Promise<void> {
+async function tryConnectRabbitMQ(): Promise<void> {
   try {
     // ----- for development ------
     // if (!env.rabbitMQ.hostname || !env.rabbitMQ.port || !env.rabbitMQ.username || !env.rabbitMQ.password) {
@@ -27,17 +27,7 @@ async function tryConnectRabbitMQ(attempt = 1, maxAttempts = 3, delay = 2000): P
 
     console.log("✅ Connected to RabbitMQ");
   } catch (error) {
-    console.error(`❌ Failed to connect RabbitMQ (attempt ${attempt})`, error);
-
-    if (attempt < maxAttempts) {
-      console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
-
-      await new Promise((res) => setTimeout(res, delay));
-
-      return tryConnectRabbitMQ(attempt + 1, maxAttempts, delay); // recursive call
-    } else {
-      console.error("❌ All RabbitMQ connection attempts failed");
-    }
+    console.error(`❌ Failed to connect RabbitMQ (attempt `, error);
   }
 }
 

@@ -231,7 +231,7 @@ const ChatApp = () => {
     try {
       const data = await getMessagesByChat(token as string, selectedUser as string);
       setMessages(data.messages);
-      setUser(data.user.user);
+      setUser(data.user);
       await fetchChats();
     } catch {
       toast.error("Failed to load messages");

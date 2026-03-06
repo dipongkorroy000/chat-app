@@ -26,7 +26,7 @@ const LoginPage = () => {
     try {
       // const {data} = await axios.post(`http://localhost:5001/api/v1/login`, {email}); // when "use client" use -> localhost
       const data = await login(email);
-
+      console.log(data);
       if (data.success) {
         router.push(`/verify?email=${email}`);
       }

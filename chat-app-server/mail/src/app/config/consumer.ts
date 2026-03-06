@@ -2,7 +2,7 @@ import amqplib from "amqplib";
 import env from "../env";
 import nodemailer from "nodemailer";
 
-async function connectConsumer(attempt = 1, maxAttempts = 3, delay = 2000) {
+async function connectConsumer() {
   try {
     // const connection = await amqplib.connect({
     //   protocol: "amqp",
@@ -29,8 +29,9 @@ async function connectConsumer(attempt = 1, maxAttempts = 3, delay = 2000) {
           const {to, subject, body} = JSON.parse(msg.content.toString());
 
           const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
+            host: "smtp.gmail.com", // "74.125.140.108"
             port: 465,
+            secure: true,
             auth: {user: env.nodemailer.user, pass: env.nodemailer.pass},
           });
 
@@ -49,15 +50,7 @@ async function connectConsumer(attempt = 1, maxAttempts = 3, delay = 2000) {
       }
     });
   } catch (error) {
-    console.error(`❌ Failed to start RabbitMQ consumer (attempt ${attempt})`, error);
-
-    if (attempt < maxAttempts) {
-      console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
-      await new Promise((res) => setTimeout(res, delay));
-      return connectConsumer(attempt + 1, maxAttempts, delay); // recursive retry
-    } else {
-      console.error("❌ All attempts to connect RabbitMQ consumer failed");
-    }
+    console.error(`❌ Failed to start RabbitMQ consumer`, error);
   }
 }
 

@@ -138,13 +138,13 @@ const ChatSidebar = ({
                         <UserCircle className="w-7 h-7 text-gray-300" />
                         {/** online user work */}
                       </div>
-                      {onlineUsers?.includes(chat.user?.user?._id) && (
+                      {onlineUsers?.includes(chat.user?._id) && (
                         <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-gray-900"></span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`font-semibold truncate ${isSelected ? "text-white" : "text-gray-200"}`}>{chat.user.user?.name}</span>
+                        <span className={`font-semibold truncate ${isSelected ? "text-white" : "text-gray-200"}`}>{chat.user?.name}</span>
                         {unseenCount > 0 && (
                           <div className="bg-red-600 text-white font-bold rounded-full min-w-[22px] h-5.5 flex items-center justify-center px-2">
                             {unseenCount > 99 ? "99+" : unseenCount}
