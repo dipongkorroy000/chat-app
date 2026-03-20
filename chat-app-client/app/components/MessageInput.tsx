@@ -1,5 +1,6 @@
 import {Loader2, Paperclip, Send, X} from "lucide-react";
-import {useState} from "react";
+import Image from "next/image";
+import {useEffect, useMemo, useState} from "react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface MessageInputProps {
@@ -12,6 +13,16 @@ interface MessageInputProps {
 const MessageInput = ({selectedUser, message, setMessage, handleMessageSend}: MessageInputProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  const previewUrl = useMemo(() => {
+    if (!imageFile) return null;
+    return URL.createObjectURL(imageFile);
+  }, [imageFile]);
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -31,7 +42,16 @@ const MessageInput = ({selectedUser, message, setMessage, handleMessageSend}: Me
     <form onSubmit={handleSubmit} className="flex flex-col gap-2 border-t border-gray-700 pt-2">
       {imageFile && (
         <div className="relative w-fit">
-          <img src={URL.createObjectURL(imageFile)} alt="preview" className="w-24 h-24 object-cover rounded-lg border border-gray-600" />
+          {previewUrl ? (
+            <Image
+              src={previewUrl}
+              alt="preview"
+              width={96}
+              height={96}
+              unoptimized
+              className="w-24 h-24 object-cover rounded-lg border border-gray-600"
+            />
+          ) : null}
           <button onClick={() => setImageFile(null)} type="button" className="absolute -top-2 -right-2 bg-black rounded-full p-1">
             <X className="w-4 h-4 text-white" />
           </button>

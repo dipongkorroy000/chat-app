@@ -111,7 +111,7 @@ const VerifyOTP = () => {
       await fetchUsers();
       await fetchChats();
     })();
-  }, [isAuth]);
+  }, [isAuth, fetchUsers, fetchChats]);
 
   const handleResendOTP = async () => {
     setLoading(true);
