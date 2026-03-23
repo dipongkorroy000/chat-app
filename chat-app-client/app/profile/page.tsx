@@ -56,8 +56,8 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
-      <div className="max-w-2xl mx-auto pt-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="max-w-2xl mx-auto pt-8">
+          <div className="flex items-center gap-4 mb-8">
           <button onClick={() => router.push("/chat")} className="p-3 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700">
             <ArrowLeft className="w-5 h-5 text-gray-300" />
           </button>
@@ -161,7 +161,7 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
   );
 };
 

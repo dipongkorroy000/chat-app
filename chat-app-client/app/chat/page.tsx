@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {startTransition, useEffect, useState} from "react";
+import {startTransition, useCallback, useEffect, useState} from "react";
 import {useAppData} from "../context/AppContext";
 import {redirect} from "next/navigation";
 import Loading from "../components/Loading";
@@ -111,35 +111,41 @@ const ChatApp = () => {
     setTypingTimeOut(timeout);
   };
 
-  const moveChatToTop = (chatId: string, newMessage: any, updatedUnseenCount = true) => {
-    setChats((prev) => {
-      if (!prev) return null;
+  const moveChatToTop = useCallback(
+    (chatId: string, newMessage: any, updatedUnseenCount = true) => {
+      setChats((prev) => {
+        if (!prev) return null;
 
-      const updatedChats = [...prev];
-      const chatIndex = updatedChats.findIndex((chat) => chat.chat._id === chatId);
+        const updatedChats = [...prev];
+        const chatIndex = updatedChats.findIndex((chat) => chat.chat._id === chatId);
 
-      if (chatIndex !== -1) {
-        const [moveChat] = updatedChats.splice(chatIndex, 1);
+        if (chatIndex !== -1) {
+          const [moveChat] = updatedChats.splice(chatIndex, 1);
 
-        const updatedChat = {
-          ...moveChat,
-          chat: {
-            ...moveChat.chat,
-            latestMessage: {
-              text: newMessage.text,
-              sender: newMessage.sender,
+          const updatedChat = {
+            ...moveChat,
+            chat: {
+              ...moveChat.chat,
+              latestMessage: {
+                text: newMessage.text,
+                sender: newMessage.sender,
+              },
+              updatedAt: new Date(),
+              unseenCount:
+                updatedUnseenCount && newMessage.sender !== loggedInUser?._id
+                  ? (moveChat.chat.unseenCount || 0) + 1
+                  : moveChat.chat.unseenCount || 0,
             },
-            updatedAt: new Date(),
-            unseenCount: updatedUnseenCount && newMessage.sender !== loggedInUser?._id ? (moveChat.chat.unseenCount || 0) + 1 : moveChat.chat.unseenCount || 0,
-          },
-        };
+          };
 
-        updatedChats.unshift(updatedChat);
-      }
+          updatedChats.unshift(updatedChat);
+        }
 
-      return updatedChats;
-    });
-  };
+        return updatedChats;
+      });
+    },
+    [setChats, loggedInUser?._id]
+  );
 
   useEffect(() => {
     socket?.on("newMessage", (message) => {
@@ -198,20 +204,23 @@ const ChatApp = () => {
       socket?.off("userTyping");
       socket?.off("userStoppedTyping");
     };
-  }, [socket, selectedUser, setChats, loggedInUser?._id]);
+  }, [socket, selectedUser, loggedInUser?._id, moveChatToTop]);
 
-  const resetUnseenCount = (chatId: string) => {
-    setChats((prev) => {
-      if (!prev) return null;
+  const resetUnseenCount = useCallback(
+    (chatId: string) => {
+      setChats((prev) => {
+        if (!prev) return null;
 
-      return prev.map((chat) => {
-        if (chat.chat._id === chatId) {
-          return {...chat, chat: {...chat.chat, unseenCount: 0}};
-        }
-        return chat;
+        return prev.map((chat) => {
+          if (chat.chat._id === chatId) {
+            return {...chat, chat: {...chat.chat, unseenCount: 0}};
+          }
+          return chat;
+        });
       });
-    });
-  };
+    },
+    [setChats]
+  );
 
   async function createChat(u: User) {
     const token = Cookies.get("chat-app-token");
@@ -221,12 +230,12 @@ const ChatApp = () => {
       setSelectedUser(data.chatId);
       setShowAllUsers(false);
       await fetchChats();
-    } catch (error) {
+    } catch {
       toast.error("Failed to start chat");
     }
   }
 
-  const fetchChat = async () => {
+  const fetchChat = useCallback(async () => {
     const token = Cookies.get("chat-app-token");
     try {
       const data = await getMessagesByChat(token as string, selectedUser as string);
@@ -236,7 +245,7 @@ const ChatApp = () => {
     } catch {
       toast.error("Failed to load messages");
     }
-  };
+  }, [selectedUser, fetchChats, setMessages, setUser]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -253,7 +262,7 @@ const ChatApp = () => {
         setMessages(null);
       };
     }
-  }, [selectedUser, socket]);
+  }, [selectedUser, socket, fetchChat, resetUnseenCount]);
 
   useEffect(() => {
     return () => {
@@ -267,28 +276,28 @@ const ChatApp = () => {
 
   return (
     <div className="max-h-screen flex bg-gray-900 text-white relative overflow-y-auto">
-      <ChatSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        chats={chats}
-        showAllUsers={showAllUsers}
-        setShowAllUsers={setShowAllUsers}
-        handleLogout={handleLogout}
-        loggedInUser={loggedInUser}
-        selectedUser={selectedUser}
-        setSelectedUser={setSelectedUser}
-        users={users}
-        createChat={createChat}
-        onlineUsers={onlineUsers}
-      />
-      <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-2 border-white/10 max-h-screen overflow-y-auto">
-        <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} onlineUsers={onlineUsers} />
+        <ChatSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          chats={chats}
+          showAllUsers={showAllUsers}
+          setShowAllUsers={setShowAllUsers}
+          handleLogout={handleLogout}
+          loggedInUser={loggedInUser}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
+          users={users}
+          createChat={createChat}
+          onlineUsers={onlineUsers}
+        />
+        <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-2 border-white/10 max-h-screen overflow-y-auto">
+          <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} onlineUsers={onlineUsers} />
 
-        <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
+          <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
 
-        <MessageInput selectedUser={selectedUser} message={message} setMessage={handleTyping} handleMessageSend={handleMessageSend}></MessageInput>
+          <MessageInput selectedUser={selectedUser} message={message} setMessage={handleTyping} handleMessageSend={handleMessageSend}></MessageInput>
+        </div>
       </div>
-    </div>
   );
 };
 
